@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<!-- Popper JS -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<style>
+		body, html {
+  			height: 100%;
+ 		 	margin: 0;
+
+  			}
+
+* {
+  box-sizing: border-box;
+}
+	.bg-image {
+		background-image: url('https://cdn1.vectorstock.com/i/1000x1000/54/60/chinese-dragon-vector-9915460.jpg');
+		background-attachment: fixed;
+		filter: blur(5px);
+  		-webkit-filter: blur(5px);
+  		height: 100%;
+  		background-position: center;
+  		background-repeat: no-repeat;
+  		background-size: cover;
+	}
+	.body {
+  		background-color: rgb(0,0,0); /* Fallback color */
+		background-color: rgba(0,0,0, 0.4); /* Black w/opacity/see-through */
+		color: white;
+		font-weight: bold;
+		border: 3px solid #f1f1f1;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 2;
+		width: 80%;
+		padding: 20px;
+		text-align: center;
+	}
+	p {
+
+		border: 2px solid white;
+		padding: 5px;
+		}
+</style>
+</head>
+<body>
+<div class="bg-image"></div>
+<div class="body">
+<h1 style="text-align: center; font-family: shojumaru">David's Restaurant</h1>
+<h3 style="text-align: center; font-family: shojumaru">Menu Explorer</h3>
+<p style="text-align: center; font-family: shojumaru">Here is a look at restaurant's finest delicacies!</p>
+<p id="id" style="font-family: shojumaru; display: inline;" class="rounded-circle"></p>
+<p id="sname" style="font-family: shojumaru; display: inline;" class="rounded-circle"></p>
+<div class="form-group">
+<label for="name" style="font-family: shojumaru">Choose dish: </label>
+<select id="name" name="name" class="form-control"></select>
+<label for="portion" id="port" style="font-family: shojumaru">Choose portion: </label>
+<select id="portion" name="portion" class="form-control"></select>
+</div>
+<p id="desc" class = "collapse" style="font-family: shojumaru"></p>
+<div class="btn-group">
+<button id="Details" style="font-family: shojumaru" class="btn btn-outline-primary" >
+Get Details
+</button>
+<button id="price" style="font-family: shojumaru" class="btn btn-outline-primary" >
+Price
+</button>
+</div><br>
+<p id="cost" class= "collapse"style="font-family: shojumaru; text-align: center; "></p>
+</div>
+<script type="text/javascript">
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function() {
+  if (this.readyState == 4 && this.status == 200) {
+    var select = document.getElementById("name");
+    var myObj = JSON.parse(this.responseText);
+    console.log(myObj)
+
+    for (var i =0; i<219; i++){
+    	var option = document.createElement('option');
+    	option.text = option.value = myObj.menu_items[i].name;
+    	select.add(option, 0);
+    	//console.log(myObj.menu_items[i].large_portion_name,myObj.menu_items[i].small_portion_name);
+    }
+     $(document).ready(function(){
+     	$("#portion").hide();
+     	$("#port").hide();
+     	$("#id").hide();
+     	$("#sname").hide();
+  		$("#Details").click(function(){
+  			$("#desc.collapse").collapse("show");
+  			$("#cost.collapse").collapse("hide");
+  			$("#id").show();
+     		$("#sname").show();
+  			var selectedText = $("#name option:selected").html();
+    		var portion = document.getElementById("portion");
+    		for(var i=0; i<=portion.length; i++){
+    			portion.remove(portion[i]);
+    		}
+        	for(var j=0; j<219; j++){
+        		if (myObj.menu_items[j].name==selectedText){
+        			document.getElementById("desc").innerHTML = "About the dish:"+ "\n" + myObj.menu_items[j].description;
+        			document.getElementById("id").innerHTML = "ID: " + myObj.menu_items[j].id;
+        			document.getElementById("sname").innerHTML = "Food Code: " + myObj.menu_items[j].short_name;
+        			if (myObj.menu_items[j].small_portion_name!= null){
+        			$("#portion").show();
+     				$("#port").show();
+        			var opt1 = document.createElement('option');
+        			var opt2 = document.createElement('option');
+        			opt1.text = opt1.value = myObj.menu_items[j].large_portion_name;
+        			opt2.text = opt2.value = myObj.menu_items[j].small_portion_name;
+        			console.log(opt1,opt2,portion.length)
+        			portion.add(opt1, portion[0]);
+        			portion.add(opt2, portion[1]);
+        			}
+        			else{
+        				$("#portion").hide();
+     					$("#port").hide();
+        			}
+        		}
+
+        	}
+  		});
+  		$("#price").click(function(){
+  			$("#cost.collapse").collapse("show");
+  			var selectedText = $("#name option:selected").html();
+  			for(var i=0;i<219;i++){
+  				if(selectedText==myObj.menu_items[i].name){
+  					if (myObj.menu_items[i].small_portion_name!=null || myObj.menu_items[i].large_portion_name=="slice"){
+  					var size = $("#portion option:selected").html();
+  					if (size=="quart" || size=="large" || size=="whole"){
+        				document.getElementById("cost").innerHTML = "Dish price: $" + myObj.menu_items[i].price_large;
+  					}
+  					else if(myObj.menu_items[i].large_portion_name=="slice"){
+        				document.getElementById("cost").innerHTML = "Dish price: $" + myObj.menu_items[i].price_large + " per slice";
+  					}
+  					else{
+        				document.getElementById("cost").innerHTML = "Dish price: $" + myObj.menu_items[i].price_small;
+  					}
+  				}
+  				else{
+        			document.getElementById("cost").innerHTML = "Dish price: $" + myObj.menu_items[i].price_large;
+  				}
+  				}
+  			}
+  		});
+  		$("#portion").click(function(){
+  			$("#cost.collapse").collapse("hide");
+  		});
+  		$("#name").click(function(){
+  			$("#desc.collapse").collapse("hide");
+  			$("#portion").hide();
+     		$("#port").hide();
+     		$("#id").hide();
+     		$("#sname").hide();
+     		$("#cost.collapse").collapse("hide");
+  		});
+	});
+
+  }
+};
+xmlhttp.open("GET", "restaurant.json", true);
+xmlhttp.send();
+
+</script>
+
+
+
+</body>
+</html>
